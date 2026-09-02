@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aes-key-recovery-sca"
+version = "0.1.0"
+description = "ML-based AES-128 key recovery via side-channel analysis on the ASCAD dataset (replication of Poudel & Rahimi, arXiv:2508.11817)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.0",
+    "h5py>=3.10",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "tqdm>=4.66",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "scikit-learn>=1.4",
+    "torch>=2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.5", "jupyter>=1.0"]
+
+[tool.setuptools]
+packages = ["src", "src.models", "data"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

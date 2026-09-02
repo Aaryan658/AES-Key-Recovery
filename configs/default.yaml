@@ -1,0 +1,145 @@
+# Default experiment configuration for ASCAD AES key-recovery.
+# Override any field on the CLI, e.g.:
+#   python -m src.run_experiment --model cnn --byte 2 --epochs 50
+#
+# Paper reference: Poudel & Rahimi, "Machine Learning-Based AES Key Recovery
+# via Side-Channel Analysis on the ASCAD Dataset", arXiv:2508.11817 (2025).
+
+dataset:
+  # Path to the pre-processed ASCAD HDF5 file produced by data/download_ascad.py
+  h5_path: data/raw/ASCAD.h5
+  # ASCAD fixed-key: 50000 profiling + 10000 attack traces, 700 samples each.
+  n_profiling: 50000      # set smaller for quick smoke tests
+  n_attack: 10000
+  # Byte index of the AES key to attack. ASCAD masks bytes 2..15; byte 2 is the
+  # community-standard target and (almost certainly) the paper's choice.
+  target_byte: 2
+  # Leakage model for the label: "ID" = Sbox(p^k) value (0..255, 256 classes),
+  # "HW" = Hamming weight of that value (0..8, 9 classes). The paper frames the
+  # task as 256-class, so "ID" is the default.
+  leakage_model: ID
+
+preprocess:
+  # "standardize" (zero mean/unit var, fit on profiling only), "minmax", or "none"
+  scaler: standardize
+
+train:
+  seed: 0
+  # Fraction of profiling traces held out for validation (deep models only).
+  val_split: 0.1
+
+# ---- Classical baselines (scikit-learn) ----
+random_forest:
+  n_estimators: 300
+  max_depth: null           # null = grow until pure
+  max_features: sqrt
+  min_samples_leaf: 5
+  n_jobs: -1
+  class_weight: null
+
+svm:
+  # RBF-SVM is O(n^2); the full 50k profiling set is impractical, so we subsample.
+  # Deliberate deviation from a naive reading of the paper (documented in README).
+  # Set to null to use all profiling traces (very slow).
+  max_train_samples: 10000
+  kernel: rbf
+  C: 10.0
+  gamma: scale
+  # PCA whitening before SVM helps on 700-dim noisy traces.
+  pca_components: 50
+
+# ---- Deep models (PyTorch) ----
+cnn:
+  # arch: "zaid" (default, compact ASCAD CNN, Zaid et al. CHES 2020) or "vgg"
+  # (ASCAD CNN_best). The 60M-param VGG head memorises masked ASCAD (train acc
+  # climbs, val loss diverges) and never ranks the key without heavy tuning; the
+  # ~17k-param zaid net cannot memorise and, with one-cycle LR, drives the
+  # validation guessing entropy to 0 by ~epoch 25.
+  arch: zaid
+  epochs: 50
+  batch_size: 50
+  optimizer: adam
+  lr: 0.005              # OneCycleLR initial = max_lr / div_factor
+  max_lr: 0.005          # one-cycle peak
+  lr_schedule: onecycle  # none | cosine | onecycle
+  weight_decay: 0.0
+  # Model selection uses validation GUESSING ENTROPY, never val CE loss (which is
+  # anti-correlated with attack success for the first ~20 epochs on masked SCA).
+  ge_eval_every: 5
+  early_stopping_patience: 30
+  # --- per-arch knobs (uncomment to override the chosen arch's preset) ---
+  # zaid preset:  conv_filters [4], kernel_size 1, fc_units [10,10,10], selu, BN
+  # vgg  preset:  conv_filters [64,128,256,512,512], kernel_size 11, fc_units [4096,4096], relu, BN
+  #               (for arch: vgg also set lr_schedule: none, optimizer: rmsprop, lr: 0.00001)
+  # conv_filters: [4]
+  # kernel_size: 1
+  # pool_size: 2
+  # fc_units: [10, 10, 10]
+  # dropout: 0.0
+  # activation: selu
+  # use_bn: true
+
+resnet:
+  # 1D ResNet, Karayalcin/Perin/Picek 2023 recipe (see
+  # docs/resnet_improvement_research.md). n_blocks defaults to
+  # floor(log2(input_length)) - 2 = 7 for the 700-sample fixed-key set.
+  # NB the paper finds ResNet is overkill on fixed-key ID (a shallower CNN is
+  # more efficient) - this is mainly here for configs/ascad_variable.yaml.
+  epochs: 100
+  batch_size: 50
+  optimizer: adam
+  lr: 0.0001
+  base_lr: 0.0001
+  max_lr: 0.005
+  lr_schedule: cyclic
+  cyclic_step_size_epochs: 8
+  cyclic_mode: triangular2
+  weight_decay: 0.0
+  stem_filters: 16
+  stem_kernel: 11
+  kernel_size: 11
+  max_filters: 256
+  fc_units: [200]
+  head_bn: true
+  dropout: 0.0
+  activation: selu
+  ge_eval_every: 5
+  early_stopping_patience: 40
+
+multitask_resnet:
+  # Shared ResNet trunk + 3 joint heads (see docs/resnet_improvement_research.md
+  # section 4.5 and src/models/multitask_resnet.py):
+  #   y  = Sbox(p^k)            -> the key-recovery head
+  #   r  = masks[:, mask_index] -> the r_out mask share
+  #   yr = y ^ r                -> the masked S-box output
+  # Only y recovers the key; r/yr just keep back-prop's gradient non-flat through
+  # the masked-SCA plateau. Fixed-key ID is easy enough that the plain CNN already
+  # ranks the key -- this block is mostly for configs/ascad_variable.yaml.
+  mask_index: 15
+  task_weights: [1.0, 1.0, 1.0]
+  epochs: 100
+  batch_size: 50
+  optimizer: adam
+  lr: 0.0001
+  base_lr: 0.0001
+  max_lr: 0.005
+  lr_schedule: cyclic
+  cyclic_step_size_epochs: 8
+  cyclic_mode: triangular2
+  weight_decay: 0.0
+  stem_filters: 16
+  stem_kernel: 11
+  kernel_size: 11
+  max_filters: 256
+  fc_units: [200]
+  head_bn: true
+  dropout: 0.0
+  activation: selu
+  ge_eval_every: 5
+  early_stopping_patience: 40
+
+evaluate:
+  # Key-rank / guessing-entropy curve settings.
+  max_attack_traces: 2000     # x-axis upper bound of the key-rank plot
+  n_experiments: 100          # random attack-subset draws to average the rank over
+  step: 1                     # evaluate rank every `step` traces (1 = every trace)

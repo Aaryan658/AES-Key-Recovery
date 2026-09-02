@@ -1,0 +1,19 @@
+# Core scientific stack
+numpy>=1.26
+scipy>=1.11
+pandas>=2.0
+h5py>=3.10
+matplotlib>=3.8
+seaborn>=0.13
+tqdm>=4.66
+pyyaml>=6.0
+requests>=2.31
+
+# Classical ML baselines
+scikit-learn>=1.4
+
+# Deep learning (CNN / ResNet).
+# CUDA build is environment-specific. This repo was developed against
+# torch 2.13.0+cu126 (CUDA 12.6). If you only need CPU, `pip install torch`
+# is enough. For a specific CUDA build see https://pytorch.org/get-started/locally/
+torch>=2.2

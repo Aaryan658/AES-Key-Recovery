@@ -1,0 +1,52 @@
+# Data (large, downloaded separately)
+data/raw/
+data/processed/
+!data/raw/.gitkeep
+*.h5
+*.zip
+*.npy
+*.npz
+
+# Trained models / checkpoints
+*.pt
+*.pth
+*.pkl
+*.joblib
+checkpoints/
+
+# Results are regenerated; keep the folder, ignore per-run artifacts and logs...
+results/**/*.png
+results/**/*.pdf
+results/**/*.csv
+results/**/*.json
+results/**/run.log
+results/_*.log
+!results/.gitkeep
+# ...but do keep the curated milestone figures + the recovered-key check
+!results/milestone*.png
+!results/m3_fullkey_fixed.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+.pip-cache/
+.ruff_cache/
+
+# scratch orchestration / download logs at the results root (per-run logs live
+# in results/<run>/run.log and are ignored by the results rules above)
+results/_*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local agent tooling / session logs - not for the public repo
+.claude/

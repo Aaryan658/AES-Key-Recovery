@@ -1,0 +1,97 @@
+{
+  "h5_path": "data/raw/ASCAD.h5",
+  "key_is_constant": true,
+  "true_key_hex": "4dfbe0f27221fe10a78d4adc8e490469",
+  "recovered_key_hex": "0000e06f8d0000000000000000000000",
+  "recovered_mask": [
+    -1,
+    -1,
+    224,
+    111,
+    141,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1
+  ],
+  "bytes_attempted": [
+    2,
+    3,
+    4
+  ],
+  "bytes_correct": [
+    2
+  ],
+  "per_byte": {
+    "0": {
+      "status": "not attempted"
+    },
+    "1": {
+      "status": "not attempted"
+    },
+    "2": {
+      "status": "attempted",
+      "true": 224,
+      "recovered": 224,
+      "correct": true,
+      "final_mean_rank": 0.09,
+      "traces_to_rank0": 1364
+    },
+    "3": {
+      "status": "attempted",
+      "true": 242,
+      "recovered": 111,
+      "correct": false,
+      "final_mean_rank": 169.46,
+      "traces_to_rank0": null
+    },
+    "4": {
+      "status": "attempted",
+      "true": 114,
+      "recovered": 141,
+      "correct": false,
+      "final_mean_rank": 162.14,
+      "traces_to_rank0": null
+    },
+    "5": {
+      "status": "not attempted"
+    },
+    "6": {
+      "status": "not attempted"
+    },
+    "7": {
+      "status": "not attempted"
+    },
+    "8": {
+      "status": "not attempted"
+    },
+    "9": {
+      "status": "not attempted"
+    },
+    "10": {
+      "status": "not attempted"
+    },
+    "11": {
+      "status": "not attempted"
+    },
+    "12": {
+      "status": "not attempted"
+    },
+    "13": {
+      "status": "not attempted"
+    },
+    "14": {
+      "status": "not attempted"
+    },
+    "15": {
+      "status": "not attempted"
+    }
+  }
+}

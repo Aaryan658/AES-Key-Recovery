@@ -1,0 +1,114 @@
+# Milestone 2 config: ATMEGA_AES_v1 VARIABLE-key set.
+#   python -m src.run_experiment --model resnet --config configs/ascad_variable.yaml
+#
+# 200000 profiling (keys vary per trace) + 100000 attack (fixed key) traces,
+# 1400 samples. The paper reports the compact CNN struggles here and a ResNet
+# with residual blocks is needed; both are run for the comparison.
+
+dataset:
+  h5_path: data/raw/ascad-variable.h5
+  n_profiling: 200000
+  n_attack: 100000
+  target_byte: 2
+  leakage_model: ID
+
+preprocess:
+  scaler: standardize
+
+train:
+  seed: 0
+  val_split: 0.05          # 10000 held-out traces is plenty for the val-GE metric
+
+random_forest:
+  n_estimators: 300
+  max_depth: null
+  max_features: sqrt
+  min_samples_leaf: 5
+  n_jobs: -1
+  class_weight: null
+
+svm:
+  max_train_samples: 10000
+  kernel: rbf
+  C: 10.0
+  gamma: scale
+  pca_components: 50
+
+cnn:
+  # compact ASCAD CNN - expected to underperform on variable key (the paper's point)
+  arch: zaid
+  epochs: 50
+  batch_size: 128
+  optimizer: adam
+  lr: 0.005
+  max_lr: 0.005
+  lr_schedule: onecycle
+  weight_decay: 0.0
+  ge_eval_every: 5
+  early_stopping_patience: 30
+
+resnet:
+  # Karayalcin/Perin/Picek 2023 recipe (see docs/resnet_improvement_research.md):
+  # kernel 11, SELU + lecun-normal init, ~8 residual blocks for 1400 samples
+  # (n_blocks defaults to floor(log2(input_length)) - 2), each block AvgPool(2),
+  # flatten head + FC(200) + BN, 100 epochs / batch 50, triangular cyclic LR.
+  # The masked-SCA plateau typically breaks around epoch ~30 - judge by val_GE,
+  # not by the first few epochs.
+  epochs: 80
+  batch_size: 256          # Karayalcin used 50; larger batch is much faster here and fine
+  optimizer: adam
+  lr: 0.0001               # cyclic base_lr
+  base_lr: 0.0001
+  max_lr: 0.005
+  lr_schedule: cyclic
+  cyclic_step_size_epochs: 8
+  cyclic_mode: triangular2
+  weight_decay: 0.0
+  stem_filters: 8
+  stem_kernel: 11
+  stem_pool: 2             # halve 1400 -> 700 up front; k=11 convs over 1400 were VRAM/epoch-time bound on 8 GB
+  kernel_size: 11
+  n_blocks: 6             # floor(log2(700)) - 3
+  max_filters: 128
+  fc_units: [200]
+  head_bn: true
+  dropout: 0.0
+  activation: selu
+  ge_eval_every: 5
+  early_stopping_patience: 40   # plateau can last 30+ epochs; be patient
+
+multitask_resnet:
+  # Shared ResNet trunk + 3 joint heads: y = Sbox(p^k) (key head), r = r_out
+  # mask share (masks[:, mask_index]), yr = y ^ r (masked S-box output). Only the
+  # y head recovers the key; r/yr give back-prop a non-flat gradient so the
+  # masked-SCA plateau breaks consistently (Marquet & Oswald, eprint 2023/006).
+  # Trunk hparams mirror the single-task resnet block above.
+  mask_index: 15           # ANSSI ASCAD: masks[:, 15] = r_out
+  task_weights: [1.0, 1.0, 1.0]   # [y, r, yr] loss weights
+  epochs: 80
+  batch_size: 256
+  optimizer: adam
+  lr: 0.0001
+  base_lr: 0.0001
+  max_lr: 0.005
+  lr_schedule: cyclic
+  cyclic_step_size_epochs: 8
+  cyclic_mode: triangular2
+  weight_decay: 0.0
+  stem_filters: 8
+  stem_kernel: 11
+  stem_pool: 2
+  kernel_size: 11
+  n_blocks: 6
+  max_filters: 128
+  fc_units: [200]
+  head_bn: true
+  dropout: 0.0
+  activation: selu
+  ge_eval_every: 5
+  early_stopping_patience: 40
+
+evaluate:
+  max_attack_traces: 5000    # variable-key needs more traces to converge
+  n_experiments: 100
+  step: 2
