@@ -1,0 +1,45 @@
+======================================================================
+  AES KEY-RECOVERY SIDE-CHANNEL ATTACK  -  RESULT
+======================================================================
+
+SETUP
+  A small chip encrypts data with AES-128 using a fixed 16-byte secret
+  key. While it encrypts, we record its electromagnetic emissions as a
+  "trace" (700 numbers per encryption). We do this for many encryptions.
+
+WHAT THE ATTACKER IS GIVEN
+  - a set of power traces (700 numbers each)
+  - the plaintext that was encrypted each time (this is public)
+      e.g. first attack plaintext byte 2: 0xaa
+  NOT given: the key. That is what we are trying to find.
+
+WHAT THIS ATTACK RECOVERS
+  One byte of the key: byte #2 (bytes are numbered 0-15).
+  A trained neural network scores all 256 possible values for that byte;
+  scores from many traces are added up and the values ranked.
+
+THE SECRET KEY ON THE DEVICE (normally unknown - shown here as ground truth)
+    0   1 [ 2]  3   4   5   6   7   8   9  10  11  12  13  14  15 
+   4d  fb [e0] f2  72  21  fe  10  a7  8d  4a  dc  8e  49  04  69 
+
+  full key (hex): 4dfbe0f27221fe10a78d4adc8e490469
+  target byte    : #2
+  true value     : 0xe0  (224)
+
+ATTACK PROGRESS  (top guess and the true byte's rank, vs traces used)
+    traces    top guess   rank of true byte
+        10           0x34                  36
+        30           0xc4                   4
+       100           0xe0                   0   <- correct
+       300           0xe0                   0   <- correct
+      1000           0xe0                   0   <- correct
+      2000           0xe0                   0   <- correct
+
+RESULT
+  recovered value: 0xe0  (224)
+  correct?       : YES - matches the true key byte
+  it took about 1365 attack traces for the guess to lock on and stay
+
+  key with the recovered byte filled in:
+    ?? ?? e0 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
+======================================================================

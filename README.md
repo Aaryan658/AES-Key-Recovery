@@ -8,6 +8,12 @@ output** `Sbox(plaintext_byte XOR key_byte)` from electromagnetic power traces,
 followed by a **Key Rank / Guessing Entropy** evaluation that accumulates
 log-likelihoods over many attack traces to recover one key byte.
 
+> **What was recovered:** key byte **#2** of the AES-128 key
+> `4d fb e0 f2 72 21 fe 10 a7 8d 4a dc 8e 49 04 69`, true value **`0xE0`**, from
+> ~10,000 power traces plus the (public) plaintexts and *not* the key. See
+> **[RESULTS.md](RESULTS.md)** for the plain-language version, or run
+> `python -m src.demo`.
+
 ---
 
 ## Project layout

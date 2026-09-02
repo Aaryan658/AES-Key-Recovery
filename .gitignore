@@ -22,9 +22,11 @@ results/**/*.json
 results/**/run.log
 results/_*.log
 !results/.gitkeep
-# ...but do keep the curated milestone figures + the recovered-key check
+# ...but do keep the curated milestone figures + the recovered-key demo outputs
 !results/milestone*.png
+!results/recovered_key.png
 !results/m3_fullkey_fixed.json
+!results/demo_output.txt
 
 # Python
 __pycache__/
