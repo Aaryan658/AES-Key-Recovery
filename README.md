@@ -301,17 +301,23 @@ python -m src.compare_runs results/<rf_run> results/<cnn_run> \
    variable-key the plateau is not the bottleneck and the extra heads add noise;
    the compact single-task ResNet stays ahead there.
 
-   **d. Desync robustness** (compact CNN, fixed key, `--h5-path
-   data/raw/ASCAD_desync{50,100}.h5`):
+   **d. Desync robustness** (fixed key, `--h5-path
+   data/raw/ASCAD_desync{50,100}.h5`), traces to reach mean key rank 0:
 
-   | model | clean | desync50 | desync100 |
+   | model | aligned | desync50 | desync100 |
    |---|---|---|---|
-   | compact CNN, final mean key rank | **0** (@1362) | 109 | 176 |
-   | ResNet, final mean key rank | 0 (@868) | 155 | -- |
+   | compact CNN | 1362 | **not recovered** (rank 109) | **not recovered** (rank 176) |
+   | ResNet | 868 | 608 | 979 |
 
-   Neither model has shift-invariance; +-50-sample jitter drops attack accuracy
-   to chance and the key never ranks. Recovering desynchronised traces needs
-   shift augmentation or an alignment pre-step -- not attempted here.
+   The compact CNN has no shift tolerance: any tested misalignment drops its
+   attack accuracy to chance and the key never ranks. The ResNet still recovers
+   the key at both jitter levels, with only a small trace penalty over the
+   aligned case -- consistent with the literature that ResNets cope with desync
+   where compact CNNs do not. The catch is training stability: at a 50-epoch
+   budget the desync50 ResNet run failed to break the plateau (val-GE stuck ~170
+   for all 50 epochs); at 80 epochs it broke at epoch 30 and recovered in 608
+   traces. Shift augmentation, not tried here, would be the next step to close
+   the gap to the aligned case.
 
    **e. Extra ResNet seed(s)** (variable-key byte 2): seed 0 = **276** traces
    (milestone 2), seed 1 = **1540** traces. A 5x spread across two seeds -- the
@@ -325,7 +331,7 @@ python -m src.compare_runs results/<rf_run> results/<cnn_run> \
 
    Plots: `results/milestone3_fixedkey_multitask.png` (multi-task wins),
    `results/milestone3_varkey_multitask.png` (multi-task loses),
-   `results/milestone3_desync_cnn.png` (desync collapse).
+   `results/milestone3_desync.png` (CNN fails desync, ResNet recovers).
 
    New tooling: `src/assemble_key.py`, `src/run_experiment.py --shuffle-labels`,
    the `multitask_resnet` model + config blocks, and a project `.venv/`.

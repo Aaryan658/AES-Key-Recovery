@@ -242,15 +242,21 @@ story += [Paragraph("5.4&nbsp;&nbsp;Milestone 3b - how many key bytes can be rec
 ]
 
 story += [Paragraph("5.5&nbsp;&nbsp;Milestone 3c - desynchronisation", H2), P(
-    "When the attack traces are randomly shifted, the compact CNN collapses: mean "
-    "key rank 109 at a shift of up to 50 samples and 176 at up to 100 samples, with "
-    "attack accuracy back at chance in both cases. The ResNet behaves the same way "
-    "(rank 155 at shift 50). Neither architecture has any built-in shift "
-    "invariance; recovering desynchronised traces needs shift augmentation during "
-    "training or an explicit alignment step, neither of which was attempted here.")]
-story += fig("milestone3_desync_cnn.png",
-            "Figure 4. Fixed-key ASCAD, byte 2. The CNN loses the key entirely "
-            "once the attack traces are misaligned.")
+    "When the attack traces are randomly shifted the compact CNN collapses: its "
+    "mean key rank ends at 109 for a shift of up to 50 samples and 176 for up to "
+    "100 samples, with attack accuracy back at the 1/256 chance level, and the key "
+    "is never recovered. The ResNet still recovers it - rank 0 after about 608 "
+    "traces at shift 50 and about 979 at shift 100, against about 870 on aligned "
+    "traces, so a modest penalty rather than a failure. This matches the "
+    "literature: a deeper residual network tolerates misalignment that a compact "
+    "CNN cannot. The caveat is training stability - the shift-50 ResNet run only "
+    "recovered on the second attempt, after its guessing-entropy plateau failed "
+    "to break inside a 50-epoch budget and did break at 80 epochs. Shift "
+    "augmentation during training would be the next step to close the remaining "
+    "gap to the aligned case.")]
+story += fig("milestone3_desync.png",
+            "Figure 4. Fixed-key ASCAD, byte 2. The compact CNN loses the key "
+            "under any misalignment; the ResNet recovers it at both shift levels.")
 
 story += [Paragraph("5.6&nbsp;&nbsp;Milestone 3d - control", H2), P(
     "As a check against recovering the key from a label-distribution artefact "
@@ -267,8 +273,8 @@ tbl_data = [
     ["CNN (compact)", "1360 traces", "520 traces"],
     ["ResNet (single-task)", "870 traces", "280 traces"],
     ["ResNet (multi-task)", "270 traces", "3400 traces (worse)"],
-    ["CNN, desync 50 / 100", "not recovered (109 / 176)", "-"],
-    ["ResNet, desync 50", "not recovered (155)", "-"],
+    ["CNN, desync 50 / 100", "not recovered (rank 109 / 176)", "-"],
+    ["ResNet, desync 50 / 100", "608 / 979 traces", "-"],
     ["CNN, shuffled labels", "-", "not recovered (acc = 1/256)"],
 ]
 tbl = Table(tbl_data, colWidths=[5.2 * cm, 5.6 * cm, 5.2 * cm])
@@ -296,7 +302,8 @@ story += [Paragraph("7.1&nbsp;&nbsp;Deliberate deviations from the paper", H2), 
     "its leakage. These are recorded in a table in the repository README.")]
 story += [Paragraph("7.2&nbsp;&nbsp;What reproduced and what did not", H2), P(
     "Reproduced: the classical-versus-deep split, key recovery by both the CNN and "
-    "the ResNet, and the ResNet's advantage on the variable-key set. Not "
+    "the ResNet, the ResNet's advantage on the variable-key set, and the ResNet "
+    "tolerating trace desynchronisation that defeats the compact CNN. Not "
     "reproduced: the literature's ~35-trace efficiency - our best variable-key "
     "figure is around 280 traces for a single seed, so the gap is roughly 8x and "
     "would need a proper multi-seed hyperparameter search to close. The multi-task "
@@ -304,11 +311,13 @@ story += [Paragraph("7.2&nbsp;&nbsp;What reproduced and what did not", H2), P(
     "variable-key set, which is a useful reminder that an auxiliary objective only "
     "helps while optimisation, not capacity, is the limiting factor.")]
 story += [Paragraph("7.3&nbsp;&nbsp;Limitations", H2), P(
-    "Most numbers are single-seed, and where a second seed was run (variable-key "
-    "ResNet: 280 vs 1540 traces) the spread was large, so the trace counts should "
-    "be read as order-of-magnitude figures. Full-key recovery was not attempted "
-    "because it needs the raw trace set. Desynchronised traces were not handled. "
-    "The guessing-entropy checkpoint metric is itself noisy on small validation "
+    "Most numbers are single-seed, and where a training run was repeated the "
+    "spread was large (variable-key ResNet: 280 vs 1540 traces; desync-50 ResNet: "
+    "no recovery at 50 epochs, 608 traces at 80), so the trace counts should be "
+    "read as order-of-magnitude figures and the deep models as sensitive to the "
+    "epoch budget. Full-key recovery was not attempted because it needs the raw "
+    "trace set. Desync was tested but not defended against with augmentation. The "
+    "guessing-entropy checkpoint metric is itself noisy on small validation "
     "slices, which occasionally selects a lucky epoch.")]
 
 story += [Paragraph("8&nbsp;&nbsp;Conclusion", H1), P(
