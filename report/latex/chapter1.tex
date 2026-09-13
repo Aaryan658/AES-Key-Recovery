@@ -1,0 +1,84 @@
+\clearpage
+\section[Introduction and Objectives]{Chapter -- 01: Introduction and Objectives}
+
+This project reproduces a profiled, machine-learning side-channel attack on the ASCAD
+dataset and quantifies how well four model families recover one byte of a masked
+AES-128 key, using the number of attack traces needed to drive the true key byte to
+rank zero as the primary measure of success.
+
+\subsection{Background}
+
+A masking countermeasure splits every sensitive intermediate value into random shares
+so that no single point in a power trace depends on the secret key alone. ASCAD
+(ANSSI, 2018)~\cite{benadjila2020} is the reference benchmark for evaluating whether a
+profiled, learning-based attacker can still recover the key from such an
+implementation. Poudel and Rahimi~\cite{poudel2025} frame the attack as supervised
+256-class classification of the first-round AES S-box output for one key byte and
+report key recovery within a few tens of attack traces on ASCAD. This project treats
+that paper's pipeline as a target to rebuild end to end, and asks: which of its
+qualitative claims still hold when every stage -- data loading, preprocessing,
+training, and evaluation -- is written from scratch and checked against the real
+ASCAD files.
+
+\subsection{Objectives}
+
+\begin{enumerate}
+\item To build the full ASCAD key-recovery pipeline from the raw HDF5 files through
+      to a Key Rank / Guessing Entropy evaluation, rather than relying on a
+      pre-processed benchmark harness.
+\item To reproduce the paper's central qualitative claim: that deep models (CNN,
+      ResNet) recover the masked key byte while classical baselines (random forest,
+      SVM) do not.
+\item To implement and compare four model families -- random forest, SVM, a compact
+      1-D CNN, and a 1-D ResNet -- under one shared training and evaluation
+      interface.
+\item To evaluate every model on both the fixed-key and variable-key ASCAD sets, and
+      confirm the paper's finding that a ResNet is more trace-efficient than a CNN on
+      the harder variable-key set.
+\item To go beyond the paper with three extensions: a multi-task ResNet that also
+      predicts the mask shares, a desynchronisation robustness test, and a
+      shuffled-label sanity control.
+\item To document every deviation from the paper and every engineering fix required
+      to make the pipeline train reliably, so the whole benchmark is reproducible
+      from the repository alone.
+\end{enumerate}
+
+\subsection{Data and Model}
+
+Table~\ref{tab:data-model} summarises the target, the datasets, and the evaluation
+metric used throughout the project. This defines the exact object every later chapter
+operates on: a fixed target key byte, attacked under a masking countermeasure, scored
+by how many traces it takes to rank that byte first.
+
+\begin{table}[h]
+\centering
+\caption{Data and model used throughout the project.}
+\label{tab:data-model}
+\begin{tabular}{@{}p{3.2cm}p{10.5cm}@{}}
+\toprule
+Item & Description \\
+\midrule
+Target & Key byte 2 of an AES-128 key, via $y=\mathrm{Sbox}(p[2]\oplus k[2])$
+         (256-class identity leakage model). ASCAD only masks bytes 2--15, and byte 2
+         is the community-standard target. \\[4pt]
+Datasets & Fixed-key ASCAD (ATMega8515): 50\,000 profiling + 10\,000 attack traces of
+           700 samples. Variable-key ASCAD-r: 200\,000 + 100\,000 traces of 1400
+           samples. Desynchronised variants shift each trace randomly by up to 50 or
+           100 samples. \\[4pt]
+Models & Random forest (300 trees), SVM (RBF kernel, PCA-50), a compact 1-D CNN
+          (Zaid et al.)~\cite{zaid2020}, a 1-D ResNet (Karayalcin et
+          al.)~\cite{karayalcin2023}, and a multi-task variant of the ResNet. \\[4pt]
+Metric & Key Rank / Guessing Entropy: the rank of the true key byte among all 256
+         hypotheses, as a function of the number of attack traces used, averaged over
+         100 random trace orderings. Rank 0 means the key byte is recovered. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As the table shows, top-1 classification accuracy is not the metric of interest here
+-- on masked ASCAD it sits near the $1/256\approx0.39\%$ chance line for every model.
+Key rank is what every subsequent section reports.
+
+\textbf{Result:} The project's target key byte, its two datasets, and the Key Rank
+evaluation metric were fixed at the outset and used consistently throughout every
+later section of this report.

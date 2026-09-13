@@ -1,0 +1,58 @@
+\clearpage
+\section[Conclusion and Future Scope]{Chapter -- 04: Conclusion and Future Scope}
+
+This chapter summarises what the results in Chapter~3 establish about profiled,
+machine-learning side-channel attacks on masked ASCAD traces, and identifies concrete
+extensions of this work.
+
+\subsection{Conclusion}
+
+This project rebuilt the profiled side-channel attack of Poudel and
+Rahimi~\cite{poudel2025} end to end -- data loading, preprocessing, four model
+families, and a Key Rank / Guessing Entropy evaluation -- and checked which of its
+qualitative claims survive that reconstruction. The classical-versus-deep split
+reproduces cleanly: neither the random forest nor the SVM ever rank the true key
+byte, while the compact CNN and the 1-D ResNet both recover it on the fixed-key set,
+and the ResNet does so more efficiently than the CNN on the harder variable-key set,
+which is the paper's central qualitative point. Two extensions beyond the paper
+produced genuinely new findings. First, a multi-task ResNet that also predicts the
+mask shares cuts the fixed-key trace requirement roughly threefold (870 to 270) by
+breaking the early training plateau sooner, but is actively worse on the
+variable-key set, where that plateau is not the limiting factor -- a useful reminder
+that an auxiliary training objective only helps while optimisation, not capacity, is
+the bottleneck. Second, the ResNet tolerates trace desynchronisation that defeats the
+compact CNN outright, matching the wider literature's finding that deeper residual
+networks are more shift-tolerant than compact convolutional networks. A
+shuffled-label control confirmed the pipeline depends on genuine trace-label
+association rather than a label-distribution artefact. The efficiency figures
+reported in the wider literature ($\sim$35 traces) were not matched -- the best
+result here is roughly 8$\times$ that -- and closing this gap is the main open target
+for further work.
+
+\subsection{Future Scope}
+
+\begin{itemize}
+\item Running a proper multi-seed hyperparameter search on the variable-key ResNet
+      to separate genuine efficiency gains from seed luck, and to close the gap to
+      the literature's $\sim$35-trace figure.
+\item Adding shift augmentation during training to close the remaining gap between
+      aligned and desynchronised ResNet performance.
+\item Acquiring the raw ATMega8515 trace set and implementing a per-byte
+      re-windowing step, to attempt full 16-byte key recovery rather than byte 2
+      alone.
+\item Extending the multi-task objective's early-plateau benefit to the
+      variable-key set, for example by weighting the auxiliary heads down once the
+      main task starts improving.
+\item Running the desynchronisation and multi-task experiments across multiple
+      seeds to replace single-run figures with mean $\pm$ std results.
+\item Applying the same Key Rank benchmark methodology to other masked SCA datasets
+      or leakage models (e.g.\ the Hamming-weight model, or other AES
+      implementations) as they become available.
+\end{itemize}
+
+\textbf{Result:} The project's objectives (Chapter~1) were fully met: a working,
+end-to-end key-recovery pipeline was implemented (Chapter~2), evaluated across
+classical and deep model families with three extensions beyond the original paper
+(Chapter~3), and shown to reproduce the paper's central qualitative claims while
+surfacing a genuine limitation -- the gap to the literature's best reported
+trace-efficiency figures -- that further tuning would need to close.

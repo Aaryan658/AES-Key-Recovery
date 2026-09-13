@@ -1,0 +1,127 @@
+%% Project Report built on the CU SoET Lab Project template
+%% (assets/cusoetlabproject.sty is used unmodified; only the
+%%  "Laboratory Record" wording is swapped for "Project Report"
+%%  wording here, reusing the template's own unused \ProjectTitle hook.)
+
+\documentclass[oneside,a4paper,11pt,explicit]{book}
+\input{assets/preamble}
+\input{mydata}
+
+% ===== Local content-only overrides: swap "Laboratory Record" wording =====
+% for "Project Report" wording. No colours, boxes, fonts, or spacing below
+% are changed from assets/cusoetlabproject.sty -- only the wording differs,
+% using the template's own \ProjectTitle command (already declared in the
+% .sty but unused by the stock \maketitle/\certificate).
+\makeatletter
+\renewcommand\maketitle{
+\vfill%
+\begin{center}
+{\includegraphics[scale=1]{assets/culogo1.png}}\\
+\vspace{0.5cm}
+{\huge \textbf{PROJECT REPORT}}\\
+\vspace{0.4cm}
+{\Large\textbf{\MakeUppercase{\@ProjectTitle}}}\\
+\vspace{0.5cm}
+{\LARGE submitted to}\\
+\vspace{0.5cm}{\textbf{\Large\color{black}\MakeUppercase{\@LaboratoryName}}} \\
+\vspace{0.5cm}{\textbf{\Large\color{black}\MakeUppercase{(\@LaboratoryCode)}}} \\
+\vspace{0.5cm}
+{\LARGE by}\\
+\vspace{0.3cm}
+
+\begin{table}[h]
+\begin{center}
+   \begin{tabular}{|p{3.5cm}|p{10cm}|}
+    \hline
+    &\\
+        \Large{\textbf{Name}} & \Large{\@StudentName}\\
+        &\\
+        \hline
+        &\\
+         \Large{\textbf{Register No}} & \Large{\@StudentRegNo}\\
+         &\\
+         \hline
+         &\\
+         \Large{\textbf{Class/Section}} & \Large{\@StudentClass}~\Large{\@StudentSection}\\
+         &\\
+         \hline
+    \end{tabular}
+     \end{center}
+\end{table}
+
+\vspace{0.5cm}
+{\large\color{black}\MakeUppercase{Faculty In-charge: }}{\textbf{\Large\color{black}\MakeUppercase{\@LaboratoryFacultyIncharge}}}\\
+\vspace{1cm}
+{\textbf{\Large\color{black}\MakeUppercase{\@DepartmentName}}} \\[0.3cm]\ifdefempty{\@SchoolName}{}{\textbf{\Large\color{gray}\MakeUppercase{\@SchoolName}}}\\
+[0.3cm]\ifdefempty{\@UniversityName}{}{\textbf{\Large\color{gray}\MakeUppercase{\@UniversityName}}}\\
+\end{center}%
+\begin{center}\vspace*{0.3cm} Academic Year: \@AcademicYear\end{center}
+}
+
+\renewcommand\certificate{
+\newpage
+
+\begin{center}
+		\begin{figure}[!hb]
+			\centering {{\includegraphics[totalheight=1.4in]{assets/cunamelogo.png}}}
+		\end{figure}
+    \vspace*{0.2in}
+    {\textbf{\large\color{black}\MakeUppercase{\@DepartmentName}}} \\[0.3cm]\ifdefempty{\@SchoolName}{}{\textbf{\large\color{gray}\MakeUppercase{\@SchoolName}}}\\
+[0.3cm]\ifdefempty{\@UniversityName}{}
+			\vspace{0.4in}
+        \begin{tikzpicture}
+    \node[draw=black!20, line width=2pt, rounded corners=15pt,
+          fill=green!10, inner sep=15pt, outer sep=15pt] {
+        {\fontfamily{pzc}\fontsize{25}{60}\selectfont ~~~\textbf{CERTIFICATE}~~~}
+    };
+\end{tikzpicture}
+
+\end{center}
+\doublespacing
+		\justify
+		{
+    This is to certify that the students~\textbf{\@StudentName}, bearing Register Nos.~\textbf{\@StudentRegNo}, have satisfactorily completed the project entitled \textquotedblleft\textbf{\@ProjectTitle}\textquotedblright\ as part of the laboratory course
+\@LaboratoryCode -- \@LaboratoryName~prescribed by the \@DepartmentName , \@UniversityName~for the~\@StudentSemester~ semester \@ProgramNameShort~program during the academic year \@AcademicYear.
+	}
+     \vspace{0.7in}
+\begin{center}
+	\begin{tabular}{p{6cm} p{1cm} p{6cm}}
+
+        \textbf{\@LaboratoryFacultyIncharge}& &\textbf{\@HODorCoordinator} \\
+		\textbf{Faculty In-charge}&&\textbf{\@HODorCoordinatorDesignation} \\
+	\end{tabular}
+\end{center}
+
+\vspace{0.5in}
+\textbf{Date}: \@DateofDeclaration \\
+\textbf{Place}: \@Place \\
+}
+
+% ===== INDEX heading: reuse the template's own section-tab box style =====
+% (copied verbatim from cusoetlabproject.sty's \titleformat{\section}), so
+% \tableofcontents' automatic \chapter*{...} call renders as the same
+% coloured tab instead of the (unused-in-this-document) chapter design.
+\renewcommand{\@makeschapterhead}[1]{%
+  \noindent\def\stackalignment{l}\stackunder[0pt]{\colorbox{Blue1}{\textcolor{white}{\textbf{\LARGE \large\MakeUppercase{\space #1}}}}}{\textcolor{Blue2}{\rule{\linewidth}{2pt}}}\par\vspace{12pt}%
+}
+\makeatother
+
+% Sections stand in for chapters in this single-project report (no \chapter
+% calls are used, mirroring how the template's own lab-record variant uses
+% \section per experiment); renumber sections/subsections accordingly.
+\renewcommand{\thesection}{\arabic{section}}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\renewcommand{\contentsname}{INDEX}
+
+\begin{document}
+\maketitle
+\certificate
+\primitives
+\input{index}
+\input{chapter1}
+\input{chapter2}
+\input{chapter3}
+\input{chapter4}
+\input{references}
+\end{document}

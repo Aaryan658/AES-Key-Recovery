@@ -1,0 +1,28 @@
+\clearpage
+\addcontentsline{toc}{chapter}{References}
+\ifdefstring{\ReferenceMode}{normal}{
+    \bibliographystyle{unsrtnat}
+    \begin{thebibliography}{9}
+
+\bibitem{poudel2025}
+A. Poudel and A. Rahimi, ``Machine Learning-Based AES Key Recovery via Side-Channel Analysis on the ASCAD Dataset,'' \emph{arXiv:2508.11817}, 2025.
+
+\bibitem{benadjila2020}
+R. Benadjila, E. Prouff, R. Strullu, E. Cagli, and C. Dumas, ``Deep Learning for Side-Channel Analysis and Introduction to ASCAD Database,'' \emph{Journal of Cryptographic Engineering}, 2020.
+
+\bibitem{zaid2020}
+G. Zaid, L. Bossuet, A. Habrard, and A. Venelli, ``Methodology for Efficient CNN Architectures in Profiling Attacks,'' \emph{IACR Transactions on Cryptographic Hardware and Embedded Systems (TCHES)}, vol. 2020, no. 1, 2020.
+
+\bibitem{karayalcin2023}
+S. Karayalcin, G. Perin, and S. Picek, ``Resolving the Doubts: On the Construction and Use of ResNets for Side-Channel Analysis,'' \emph{Mathematics}, 2023.
+
+\bibitem{marquet2023}
+T. Marquet and E. Oswald, ``A Comparison of Multi-task Learning and Single-task Learning Approaches,'' \emph{IACR ePrint} 2023/006.
+
+    \end{thebibliography}
+}{
+\ifdefstring{\ReferenceMode}{bibtex}{
+    \bibliographystyle{IEEEtran}
+    \bibliography{mybib}
+    }{}
+}

@@ -1,0 +1,386 @@
+%% This is the file `cusoetlabproject.sty',
+%% CU SoET Lab Project template.
+%%
+%% Developed by 2025 by Dr Venkataswamy R, Christ University.
+%%
+%% This file may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.2 of this license
+%% or (at your option) any later version.  The latest version of this
+%% license is in:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.2 or later is part of all distributions of LaTeX version
+%% 1999/12/01 or later.
+%%
+%% I do not own the rights on the Christ University Logo, 
+%% which is by consequence not covered by the license above.
+
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{cusoetlabproject}[2025/11/15 CU SoET Lab Project (v1.0)]
+%% PACKAGES
+\RequirePackage{kvoptions}
+\RequirePackage{svg}
+\RequirePackage{fancyhdr}
+\RequirePackage{titlesec}
+\RequirePackage{tikz}
+\RequirePackage{etoolbox}
+\RequirePackage{enumitem}
+\RequirePackage{geometry}
+\RequirePackage{color}
+\RequirePackage[scaled]{helvet}
+\RequirePackage{sansmath}
+\RequirePackage{caption}
+\RequirePackage{titlesec}
+\RequirePackage{stackengine}
+\RequirePackage{microtype}
+
+%%GENERAL
+\DeclareBoolOption[false]{binding}
+\DeclareBoolOption[false]{sedes}
+\ProcessKeyvalOptions{cusoetlabproject}\relax
+
+\ifcusoetlabproject@binding
+\edef\cusoetlabproject@bindingoffset{12mm}
+\else
+\edef\cusoetlabproject@bindingoffset{0mm}
+\fi
+
+\geometry{%
+a4paper,%
+bindingoffset=\cusoetlabproject@bindingoffset,%
+left=20mm,%
+right=20mm,%
+top=35mm,%
+bottom=20mm,%
+heightrounded}
+\setlength{\fboxsep}{3pt}
+
+
+%% OPTIONS
+\newcommand*{\subtitle}[1]{\gdef\@subtitle{#1}}\newcommand*{\@subtitle}{}
+
+\newcommand*{\UniversityName}[1]{\gdef\@UniversityName{#1}}\newcommand*{\@UniversityName}{}
+\newcommand*{\SchoolName}[1]{\gdef\@SchoolName{#1}}\newcommand*{\@SchoolName}{}
+\newcommand*{\DepartmentName}[1]{\gdef\@DepartmentName{#1}}\newcommand*{\@DepartmentName}{}
+\newcommand*{\Place}[1]{\gdef\@Place{#1}}\newcommand*{\@Place}{}
+\newcommand*{\AcademicYear}[1]{\gdef\@AcademicYear{#1}}\newcommand*{\@AcademicYear}{}
+\newcommand*{\LaboratoryName}[1]{\gdef\@LaboratoryName{#1}}\newcommand*{\@LaboratoryName}{}
+\newcommand*{\LaboratoryCode}[1]{\gdef\@LaboratoryCode{#1}}\newcommand*{\@LaboratoryCode}{}
+
+\newcommand*{\ProjectTitle}[1]{\gdef\@ProjectTitle{#1}}\newcommand*{\@ProjectTitle}{}
+
+\newcommand*{\LaboratoryFacultyIncharge}[1]{\gdef\@LaboratoryFacultyIncharge{#1}}\newcommand*{\@LaboratoryFacultyIncharge}{}
+
+\newcommand*{\StudentName}[1]{\gdef\@StudentName{#1}}\newcommand*{\@StudentName}{}
+
+\newcommand*{\StudentRegNo}[1]{\gdef\@StudentRegNo{#1}}\newcommand*{\@StudentRegNo}{}
+
+\newcommand*{\StudentClass}[1]{\gdef\@StudentClass{#1}}\newcommand*{\@StudentClass}{}
+
+\newcommand*{\StudentSection}[1]{\gdef\@StudentSection{#1}}\newcommand*{\@StudentSection}{}
+
+\newcommand*{\StudentSemester}[1]{\gdef\@StudentSemester{#1}}\newcommand*{\@StudentSemester}{}
+
+\newcommand*{\ProgramName}[1]{\gdef\@ProgramName{#1}}\newcommand*{\@ProgramName}{}
+\newcommand*{\ProgramNameShort}[1]{\gdef\@ProgramNameShort{#1}}\newcommand*{\@ProgramNameShort}{}
+
+\newcommand*{\SpecializationName}[1]{\gdef\@SpecializationName{#1}}\newcommand*{\@SpecializationName}{}
+
+\newcommand*{\ProjectDate}[1]{\gdef\@ProjectDate{#1}}\newcommand*{\@ProjectDate}{}
+
+\newcommand*{\HODorCoordinator}[1]{\gdef\@HODorCoordinator{#1}}\newcommand*{\@HODorCoordinator}{}
+
+\newcommand*{\HODorCoordinatorDesignation}[1]{\gdef\@HODorCoordinatorDesignation{#1}}\newcommand*{\@HODorCoordinatorDesignation}{}
+
+\newcommand*{\DateofDeclaration}[1]{\gdef\@DateofDeclaration{#1}}\newcommand*{\@DateofDeclaration}{}
+
+
+
+
+
+\newcommand*{\assistant}[1]{\gdef\@assistant{#1}}\newcommand*{\@assistant}{}%
+\newcommand*{\assistants}[1]{\gdef\@assistants{#1}}\newcommand*{\@assistants}{}%
+\newcommand*{\professor}[1]{\gdef\@professor{#1}}\newcommand*{\@professor}{}%
+\newcommand*{\professors}[1]{\gdef\@professors{#1}}\newcommand*{\@professors}{}%
+\newcommand*{\supercom}[1]{\gdef\@supercom{#1}}\newcommand*{\@supercom}{}%
+\newcommand*{\promoter}[1]{\gdef\@promoter{#1}}\newcommand*{\@promoter}{}%
+\newcommand*{\promoters}[1]{\gdef\@promoters{#1}}\newcommand*{\@promoters}{}%
+\newcommand*{\jury}[1]{\gdef\@jury{#1}}\newcommand*{\@jury}{}%
+\newcommand*{\assessors}[1]{\gdef\@assessors{#1}}\newcommand*{\@assessors}{}%
+\newcommand*{\coverimage}[1]{\gdef\@coverimage{#1}}\newcommand*{\@coverimage}{}%
+\newcommand*{\coversvg}[1]{\gdef\@coversvg{#1}}\newcommand*{\@coversvg}{}%
+\newcommand*{\coverinput}[1]{\gdef\@coverinput{#1}}\newcommand*{\@coverinput}{}%
+\def\figurename{\textsc{Figure}}\def\tablename{\textsc{Table}}\setlength\parindent{0pt}
+
+
+%% CU COLORS
+\definecolor{Blue1}{HTML}{1FABD5}
+\definecolor{Blue2}{HTML}{1D8DB0}
+\definecolor{Blue3}{HTML}{116E8A}
+\colorlet{LightBlue}{Blue2!20!white}
+
+%% TASKS & QUESTIONS
+\newlist{questions}{enumerate}{1}\setlist[questions]{label*=\textbf{\arabic{*}.},ref=\arabic{*}.}
+\makeatletter\newcommand\question[1][]{\if\relax\detokenize{#1}\relax\item\relax\else\protected@edef\@currentlabel{#1}\item[#1:~]\fi}\makeatother
+\newlist{tasks}{enumerate}{1}\setlist[tasks]{label*=\textbf{\roman{*}.},ref=\roman{*}.}
+\makeatletter\newcommand\task[1][]{\if\relax\detokenize{#1}\relax\item\relax\else\protected@edef\@currentlabel{#1}\item[#1:~]\fi}\makeatother
+    
+%% FONT
+\sansmath
+\SetSymbolFont{operators}{sans}{OT1}{cmss}{m}{n}
+\SetSymbolFont{letters}{sans}{OML}{cmbrm}{m}{it}
+\SetSymbolFont{symbols}{sans}{OMS}{cmbrs}{m}{n}
+\SetSymbolFont{largesymbols}{sans}{OMX}{iwona}{m}{n}
+\renewcommand{\familydefault}{\sfdefault}
+
+\definecolor{cublue}{HTML}{264796}
+
+
+%% HEADERS
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{fancy}}{}{}\usetikzlibrary{calc}
+\makeatletter\renewcommand{\headrulewidth}{0pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[C]{\begin{tikzpicture}[overlay, remember picture]
+    \fill[cublue] (current page.north west) rectangle ($(current page.north east)+(0,-1in)$);
+    \node[anchor=north west, text=white, font=\large, minimum size=1in, inner xsep=5mm, align=left] at (current page.north west) {\bf{\MakeUppercase{\hspace{4mm} \@DepartmentName}}\\ \hspace{6mm}\@SchoolName};
+    \node[anchor=north east, minimum size=1in, inner xsep=5mm] at (current page.north east) {\includegraphics[scale=0.3]{assets/culogo.png}};\end{tikzpicture}}
+\fancyfoot[C]{\begin{tikzpicture}[overlay, remember picture]%
+    \fill[cublue] (current page.south west) rectangle ($(current page.south east)+(0,.5in)$);
+    \node[anchor=south west, text=white, font=\large, minimum size=.5in, inner xsep=5mm] at (current page.south west) {\hspace{5mm} \leftmark};
+    \node[anchor=south east, text=white, font=\Large, minimum size=.5in] at (current page.south east) {\thepage};\end{tikzpicture}}
+\setlength{\headheight}{13.6pt}\makeatother
+
+
+%% CHAPTER & SECTION
+\titleformat{\chapter}[display]{}{\hfill \tikz[remember picture] \node[] (nr) {\bf{\fontsize{20}{70}\selectfont\color{black}\MakeUppercase{CHAPTER}~~\fontsize{60}{70}\selectfont\color{black}  \thechapter}};\begin{tikzpicture}[overlay,remember picture]\coordinate (rightborder) at ($(nr)+(100,0)$);\coordinate (right) at ($(nr.east) + (0.5,0)$);\draw[line width=4.5em, cublue] (right) -- (rightborder);\end{tikzpicture}}{-1ex}{\filleft\fontsize{30}{50}\selectfont #1}[\vspace{-1ex}]
+\titleformat{\section}[hang]{}{}{0pt}{\noindent\def\stackalignment{l}\stackunder[0pt]{\colorbox{Blue1}{\textcolor{white}{\textbf{\LARGE \large\MakeUppercase{\space #1}}}}}{\textcolor{Blue2}{\rule{\linewidth}{2pt}}}}[]
+
+%% BOX
+\newcommand\kulbox[2][3pt]{\setlength{\fboxsep}{#1}\par\noindent\begin{center}\colorbox{LightBlue}{\parbox{\linewidth-2\fboxsep}{#2}}\end{center}\setlength{\fboxsep}{3pt}}
+
+
+
+%% COVER PAGE
+\makeatletter
+\renewcommand\maketitle{
+\vfill%
+\begin{center}
+{\includegraphics[scale=1]{assets/culogo1.png}}\\
+\vspace{0.5cm}
+{\huge \textbf{LABORATORY RECORD}}\\
+\vspace{0.5cm}
+{\LARGE submitted to}\\
+\vspace{0.5cm}{\textbf{\Large\color{black}\MakeUppercase{\@LaboratoryName}}} \\
+\vspace{0.5cm}{\textbf{\Large\color{black}\MakeUppercase{(\@LaboratoryCode)}}} \\
+\vspace{0.5cm}
+{\LARGE by}\\
+\vspace{0.3cm}
+
+\begin{table}[h]
+\begin{center}
+   \begin{tabular}{|p{3.5cm}|p{10cm}|}
+    \hline
+    &\\
+        \Large{\textbf{Name}} & \Large{\@StudentName}\\
+        &\\
+        \hline
+        &\\
+         \Large{\textbf{Register No}} & \Large{\@StudentRegNo}\\
+         &\\
+         \hline
+         &\\
+         \Large{\textbf{Class/Section}} & \Large{\@StudentClass}~\Large{\@StudentSection}\\
+         &\\
+         \hline
+    \end{tabular}
+     \end{center}
+\end{table}
+
+\vspace{0.5cm}
+{\large\color{black}\MakeUppercase{Faculty In-charge: }}{\textbf{\Large\color{black}\MakeUppercase{\@LaboratoryFacultyIncharge}}}\\
+\vspace{1cm}
+{\textbf{\Large\color{black}\MakeUppercase{\@DepartmentName}}} \\[0.3cm]\ifdefempty{\@SchoolName}{}{\textbf{\Large\color{gray}\MakeUppercase{\@SchoolName}}}\\
+[0.3cm]\ifdefempty{\@UniversityName}{}{\textbf{\Large\color{gray}\MakeUppercase{\@UniversityName}}}\\
+\end{center}%
+\begin{center}\vspace*{0.3cm} Academic Year: \@AcademicYear\end{center}
+
+}
+
+\newcommand*{\certificate}[1]{\gdef\@certificate{#1}}\newcommand*{\@certificate}{}
+
+\renewcommand\certificate{    
+\newpage
+
+\begin{center}
+		\begin{figure}[!hb]
+			\centering {{\includegraphics[totalheight=1.4in]{assets/cunamelogo.png}}}
+		\end{figure}
+        \vspace*{0.2in}
+        {\textbf{\large\color{black}\MakeUppercase{\@DepartmentName}}} \\[0.3cm]\ifdefempty{\@SchoolName}{}{\textbf{\large\color{gray}\MakeUppercase{\@SchoolName}}}\\
+[0.3cm]\ifdefempty{\@UniversityName}{}
+			\vspace{0.4in}
+            \begin{tikzpicture}
+        \node[draw=black!20, line width=2pt, rounded corners=15pt, 
+              fill=green!10, inner sep=15pt, outer sep=15pt] {
+            {\fontfamily{pzc}\fontsize{25}{60}\selectfont ~~~\textbf{CERTIFICATE}~~~}
+        };
+    \end{tikzpicture}
+    
+		%{\huge \textbf{\textrm{CERTIFICATE}}}\\
+\end{center}		
+\doublespacing 
+		\justify
+		{
+
+        This is to certify that Mr./Ms.~\textbf{\@StudentName}, bearing Register No.~\textbf{\@StudentRegNo}, has satisfactorily completed the Laboratory record in the laboratory course,
+\@LaboratoryCode - \@LaboratoryName~prescribed by the \@DepartmentName , \@UniversityName~for the~\@StudentSemester~ semester \@ProgramNameShort~program during the academic year \@AcademicYear.
+	}
+     \vspace{0.7in}
+\begin{center}		
+	\begin{tabular}{p{6cm} p{1cm} p{6cm}}
+   
+        \textbf{\@LaboratoryFacultyIncharge}& &\textbf{\@HODorCoordinator} \\
+		\textbf{Faculty In-charge}&&\textbf{\@HODorCoordinatorDesignation} \\
+		&&\HODorCoordinatorDesignation\\
+	\end{tabular}
+\end{center}
+
+
+\vspace{0.5in}
+\textbf{Date}: \@DateofDeclaration \\
+\textbf{Place}: \@Place \\
+}
+
+\newcommand*{\primitives}[1]{\gdef\@primitives{#1}}\newcommand*{\@primitives}{}
+\renewcommand\primitives{
+\newpage
+\onehalfspacing
+\begin{center}
+		\begin{figure}[!hb]
+			\centering {{\includegraphics[totalheight=1.4in]{assets/cunamelogo.png}}}
+		\end{figure}
+\end{center}
+\vspace{0.2cm} 
+% Vision Section
+\begin{center}
+	\textcolor{midnight}{\Huge \textbf{Vision}}\\
+	\begin{tcolorbox}[colback=myblue!5!white,colframe=myblue!75!black]
+		\centering
+		\Large\itshape \textquotedblleft Excellence and Service\textquotedblright
+	\end{tcolorbox}
+\end{center}
+
+\vspace{0.5cm} 
+\begin{center}
+	\textcolor{midnight}{\Huge \textbf{Mission}}\\
+		\begin{tcolorbox}[colback=golden!5!white,colframe=golden!75!black]
+		\centering
+		\Large\itshape  \textquotedblleft CHRIST (Deemed to be University) is a nurturing ground for an individual's holistic development to make effective contribution to the society in a dynamic environment.\textquotedblright
+	\end{tcolorbox}
+\end{center}
+
+\vspace{0.5cm} 
+
+\begin{center}
+	\textcolor{midnight}{\Huge \textbf{Core Values}}\\
+	\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black]
+		\centering
+			\Large\itshape Faith in God \\ Moral Uprightness  \\ Love of Fellow Beings  \\ Social Responsibility \\ Pursuit of Excellence 
+	\end{tcolorbox}
+\end{center}
+
+\newpage
+
+\begin{center}
+	\begin{figure}[!hb]
+		\centering {{\includegraphics[totalheight=1.2in]{assets/cunamelogo.png}}}
+	\end{figure}
+\end{center}
+\vspace{-1.5cm} 
+% Vision Section
+\begin{center}
+	\textcolor{midnight}{\Large \textbf{Department Vision}}\\
+	\begin{tcolorbox}[colback=myblue!5!white,colframe=myblue!75!black]
+		\centering
+		\itshape  \textquotedblleft\DepartmentVision\textquotedblright
+	\end{tcolorbox}
+\end{center}
+
+\vspace{0.5cm} 
+\begin{center}
+	\textcolor{midnight}{\Large \textbf{Department Mission}}\\
+	\begin{tcolorbox}[colback=golden!5!white,colframe=golden!75!black]
+		%	\begin{tabular}{p{1cm}p{12cm}}
+				\itshape \DepartmentMission
+		%	\end{tabular}
+	\end{tcolorbox}
+\end{center}
+
+\vspace{0.5cm} 
+
+\begin{center}
+	\textcolor{midnight}{\Large \textbf{Program Educational Objectives (PEOs)}}\\
+	\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black]
+		\itshape \DepartmentPEOs 
+	\end{tcolorbox}
+\end{center}
+
+
+\newpage
+
+\begin{tcolorbox}[ enhanced, left=4mm, right=2mm, width=17cm, attach boxed title to top center={yshift=-3mm,yshifttext=-1mm}, 
+	valign=center,
+	colback=gray!5!white,colframe=black!75!black,colbacktitle=gray!90!black,
+	title=\large Program Outcomes (POs), fonttitle=\bfseries,
+	boxed title style={size=small,colframe=gray!90!black} ]
+	 {\fontsize{12}{12}\selectfont
+	\textbf{PO1: Engineering Knowledge:} Apply knowledge of mathematics, natural science,
+	computing, engineering fundamentals and an engineering specialization  to develop  the solution of complex engineering problems. \\
+	\textbf{PO2: Problem Analysis:} Identify, formulate, review research literature and analyze
+	complex engineering problems reaching substantiated conclusions with consideration
+	for sustainable development.\\
+	\textbf{PO3: Design/Development of Solutions:} Design creative solutions for complex
+	engineering problems and design/develop systems/components/processes to meet
+	identified needs with consideration for the public health and safety, whole-life cost,
+	net zero carbon, culture, society and environment as required.\\
+	\textbf{PO4: Conduct Investigations of Complex Problems:} Conduct investigations of complex
+	engineering problems using research-based knowledge including design of
+	experiments, modelling, analysis \& interpretation of data to provide valid conclusions.\\
+	\textbf{PO5: Engineering Tool Usage:} Create, select and apply appropriate techniques, resources
+	and modern engineering \& IT tools, including prediction and modelling recognizing
+	their limitations to solve complex engineering problems. \\
+	\textbf{PO6: The Engineer and The World:} Analyze and evaluate societal and environmental
+	aspects while solving complex engineering problems for its impact on sustainability
+	with reference to economy, health, safety, legal framework, culture and environment.\\
+	\textbf{PO7: Ethics: }Apply ethical principles and commit to professional ethics, human values,
+	diversity and inclusion; adhere to national \& international laws.\\
+	\textbf{PO8: Individual and Collaborative Team work:} Function effectively as an individual, and
+	as a member or leader in diverse/multi-disciplinary teams.\\
+	\textbf{PO9: Communication:} Communicate effectively and inclusively within the engineering
+	community and society at large, such as being able to comprehend and write effective
+	reports and design documentation, make effective presentations considering cultural,
+	language, and learning differences.\\
+	\textbf{PO10: Project Management and Finance: }Apply knowledge and understanding of
+	engineering management principles and economic decision-making and apply these to
+	one’s own work, as a member and leader in a team, and to manage projects and in
+	multidisciplinary environments.\\
+	\textbf{PO11: Life-Long Learning:} Recognize the need for, and have the preparation and ability for
+	i) independent and life-long learning ii) adaptability to new and emerging technologies
+	and iii) critical thinking in the broadest context of technological change.
+}
+\end{tcolorbox}
+\newpage
+
+\begin{tcolorbox}[enhanced,width=17cm, attach boxed title to top center={yshift=-3mm,yshifttext=-1mm},
+	colback=blue!5!white,colframe=gray!75!black,colbacktitle=gray!90!black,
+	title=\large Program Specific Outcomes (PSOs),fonttitle=\bfseries,
+	boxed title style={size=small,colframe=blue!90!black}]
+    
+	\DepartmentPSOs
+\end{tcolorbox}
+}\makeatother
+
+\endinput
+%%
+%% End of file `cusoetlabproject.sty'.

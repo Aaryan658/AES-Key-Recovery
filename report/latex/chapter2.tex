@@ -1,0 +1,188 @@
+\clearpage
+\section[Technical Description and Implementation]{Chapter -- 02: Technical Description and Implementation}
+
+This chapter presents the end-to-end pipeline used to load the ASCAD traces, build
+per-byte labels, train four families of model, and score each one with the Key
+Rank / Guessing Entropy metric.
+
+\subsection{Actual Work}
+
+The pipeline reads the ASCAD HDF5 files into profiling and attack trace sets,
+standardises the traces using statistics fitted on the profiling set only, and builds
+labels for the chosen key byte. A single command-line entry point,
+\texttt{src/run\_experiment.py}, drives every model family through one shared
+interface (\texttt{fit} / \texttt{predict\_proba} / \texttt{save} / \texttt{load}), so
+that a model can be swapped with a single flag:
+
+\begin{verbatim}
+python -m src.run_experiment --model random_forest
+python -m src.run_experiment --model svm
+python -m src.run_experiment --model cnn
+python -m src.run_experiment --model resnet
+python -m src.run_experiment --model multitask_resnet
+\end{verbatim}
+
+Each run writes a resolved configuration, a full log, the fitted model, a
+training-history plot, the key-rank curve (CSV and PNG), and a metrics file to its
+own timestamped directory under \texttt{results/}.
+
+\subsection{Prerequisites}
+
+\noindent\textbf{Software:} Python 3.14, PyTorch 2.13.0+cu126 (CUDA 12.6), scikit-learn,
+NumPy/SciPy, h5py, Matplotlib.
+
+\noindent\textbf{Hardware:} Windows 11 workstation, NVIDIA RTX 4060 (8\,GB VRAM).
+CUDA is optional -- the CNN and ResNet also train on CPU, more slowly.
+
+\noindent\textbf{Technical knowledge:} PyTorch training loops and checkpointing,
+convolutional and residual network design, statistical evaluation (guessing entropy),
+and HDF5 data handling.
+
+\subsection{Target and Leakage Model}
+
+The attacked value is $y=\mathrm{Sbox}(p[b]\oplus k[b])$ for a chosen key byte $b$,
+where $p$ is the known plaintext. Under the identity leakage model this gives 256
+classes. Labels are re-derived directly from the trace metadata and cross-checked
+against ASCAD's own stored labels for byte 2, which they must match exactly:
+
+\begin{verbatim}
+labels[i] = Sbox[ plaintext[i, byte] ^ key[i, byte] ]   # identity model, 256 classes
+\end{verbatim}
+
+The attack set is given no single label: every one of the 256 key hypotheses implies
+a different label for the same trace, and enumerating all 256 is exactly what the Key
+Rank step below does.
+
+\subsection{Model-Selection Fix (Engineering Contribution)}
+
+Validation cross-entropy loss is a poor stopping criterion for masked side-channel
+analysis: for roughly the first 20--25 epochs it is flat or even rising while the
+attack is already improving, so the lowest-loss epoch corresponds to a
+near-untrained network. Every deep model in this project is therefore checkpointed on
+\emph{validation guessing entropy}, computed every few epochs on a held-out slice of
+the profiling set, rather than on validation loss. This single change is what makes
+the ResNet and multi-task ResNet results in Chapter~3 reproducible; selecting on loss
+alone silently discards the epoch at which the model has actually learned to attack.
+Training also keeps the full trace tensor resident on the GPU, which is several times
+faster than per-batch host-to-device transfer for these small models on large trace
+sets.
+
+\subsection{Methods Compared}
+
+\begin{itemize}
+\item \textbf{Random forest} -- 300 trees, the classical baseline.
+\item \textbf{SVM} -- RBF kernel with PCA to 50 components; profiling subsampled to
+      10\,000 traces because an RBF SVM is quadratic in sample count.
+\item \textbf{CNN} -- the compact ASCAD network of Zaid et al.~\cite{zaid2020} ($\sim$17k
+      parameters, SELU activations, one-cycle learning rate). The larger VGG-style
+      \texttt{ASCAD\_best} network was also tried but memorises the profiling set
+      without ever ranking the key.
+\item \textbf{ResNet} -- a 1-D residual network in the style of Karayalcin et
+      al.~\cite{karayalcin2023}: kernel size 11, SELU with LeCun-normal
+      initialisation, a number of residual blocks scaled as
+      $\lfloor\log_2(\text{length})\rfloor-2$, a flatten head, and a triangular
+      cyclic learning rate.
+\item \textbf{Multi-task ResNet} -- following Marquet and
+      Oswald~\cite{marquet2023}, the same trunk with three joint linear heads
+      trained simultaneously: $y=\mathrm{Sbox}(p\oplus k)$, the output mask share
+      $r_{\text{out}}$, and $y\oplus r_{\text{out}}$. Only the $y$ head is used for
+      key recovery; the other two give back-propagation a non-flat gradient during
+      the early training plateau.
+\end{itemize}
+
+\subsection{The Key Rank / Guessing Entropy Metric}
+
+For $N$ attack traces and every key hypothesis $g\in\{0,\dots,255\}$, the
+log-probabilities the model assigns to $\mathrm{Sbox}(p_i\oplus g)$ are summed:
+
+\begin{equation}
+\mathrm{score}(g) = \sum_{i=1}^{N} \log P_{\text{model}}\bigl(\text{class} =
+\mathrm{Sbox}(p_i \oplus g) \;\big|\; \text{trace}_i\bigr)
+\label{eq:keyrank}
+\end{equation}
+
+The 256 hypotheses are ranked by this score and the rank of the true key byte is
+recorded; rank 0 means the key byte is recovered. This is averaged over 100 random
+attack-trace orderings, and the curve of mean rank against number of attack traces is
+the primary result reported in Chapter~3.
+
+\subsection{Responsibilities}
+
+\begin{itemize}
+\item Building the ASCAD data loader, amplitude scaler, and label pipeline from the
+      raw HDF5 files.
+\item Implementing the shared model interface and all five model families (random
+      forest, SVM, CNN, ResNet, multi-task ResNet).
+\item Implementing the Key Rank / Guessing Entropy metric and the validation-GE
+      checkpointing fix.
+\item Running the fixed-key, variable-key, desynchronised, and shuffled-label
+      experiment suites and producing every result figure and table.
+\item Implementing the multi-byte assembly step (\texttt{src/assemble\_key.py}) and
+      documenting its data limitation.
+\end{itemize}
+
+\subsection{Challenges}
+
+\begin{itemize}
+\item An early kernel-3, ReLU ResNet overfit the fixed-key set to chance and would
+      not train on the variable-key set at all; it took larger kernels, SELU,
+      depth scaled to the input length, and a cyclic learning rate to fix (see
+      \texttt{docs/resnet\_improvement\_research.md}).
+\item Validation cross-entropy is anti-correlated with attack success during the
+      first $\sim$20 epochs, which silently breaks naive early stopping (addressed
+      above).
+\item Deep-model results are seed-sensitive: the variable-key ResNet needed 276
+      traces on one seed and 1540 on another, and the desync-50 ResNet needed 80
+      epochs rather than 50 to break its training plateau on a repeated run.
+\item Full 16-byte key recovery is blocked by the published ASCAD files themselves,
+      which are a trace window around byte 2's leakage only; bytes 3 and 4 never
+      leave chance when attacked directly (Section~3.6).
+\end{itemize}
+
+\subsection{Software Tools Used}
+
+Table~\ref{tab:tools} lists every tool used, so the pipeline can be reproduced
+exactly.
+
+\begin{table}[h]
+\centering
+\caption{Software tools used in the implementation.}
+\label{tab:tools}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Software & Version & Purpose \\
+\midrule
+Python & 3.14 & Core implementation language \\
+PyTorch & 2.13.0+cu126 & Model training, GPU acceleration \\
+scikit-learn & latest & Random forest, PCA, SVM \\
+NumPy / SciPy & latest & Numerical computation \\
+h5py & latest & Reading the ASCAD HDF5 files \\
+Matplotlib & latest & All result figures (Chapter~3) \\
+pytest & latest & Synthetic-leakage pipeline tests \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pipeline Algorithm}
+
+\begin{algorithm}[h]
+\caption{ASCAD Key-Recovery Benchmark Pipeline}
+\begin{algorithmic}
+\State Load ASCAD HDF5 file; split into profiling and attack trace sets
+\State Fit amplitude scaler on profiling traces only; apply to both sets
+\State Build labels $y_i = \mathrm{Sbox}(p_i[b] \oplus k_i[b])$ for target byte $b$; cross-check against stored labels
+\For{each model $m \in \{$RF, SVM, CNN, ResNet, Multi-task ResNet$\}$}
+    \State Train $m$ on profiling traces, checkpointing on validation guessing entropy
+    \For{each attack-trace ordering (100 repeats)}
+        \State Accumulate $\mathrm{score}(g)$ for all 256 key hypotheses via Eq.~\eqref{eq:keyrank}
+        \State Record rank of the true key byte
+    \EndFor
+    \State Average rank curves; write \texttt{key\_rank.csv} / \texttt{.png} / metrics
+\EndFor
+\State Emit comparison figures and the summary table for Chapter~3
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Result:} The full pipeline -- data loading, five model families, the Key Rank
+metric, and the validation-GE checkpointing fix -- was implemented and executed
+end-to-end, producing the result tables and figures presented in Chapter~3.
